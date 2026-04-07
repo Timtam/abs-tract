@@ -75,7 +75,7 @@ I'm glad you asked - It's a fun play on words. AudiobookShelf is often abbreviat
 - Narrator - When available for audiobook editions
 - Cover
 - Publish Year - of edition chosen by Thalia. **Not original publish year**
-- Duration - In seconds, when available for audiobook editions
+- Duration - In minutes, when available for audiobook editions
 - Description
 - ISBN
 - Publisher

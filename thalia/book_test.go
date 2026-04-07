@@ -222,7 +222,7 @@ func TestBookDetailsFromHTML_Audiobook(t *testing.T) {
 	require.NotNil(t, book)
 
 	expectedPublishDate := time.Date(2026, time.March, 20, 0, 0, 0, 0, time.UTC)
-	expectedDuration := 81 * 60
+	expectedDuration := 81
 	require.Equal(t, "Folge 238: Falsche Schuld", book.Title)
 	require.Equal(t, "Ungekürzte Lesung mit Rufus Beck", book.Subtitle)
 	require.Equal(t, "Andre Minninger, Ben Nevis", book.Author)
@@ -321,19 +321,19 @@ func TestBookDetailsFromHTML_AudiobookNarratorFallback(t *testing.T) {
 	require.NotNil(t, book)
 	require.Equal(t, "Rufus Beck", book.Narrator)
 	require.NotNil(t, book.Duration)
-	require.Equal(t, 4*3600+38*60, *book.Duration)
+	require.Equal(t, 4*60+38, *book.Duration)
 }
 
 func TestParseDuration(t *testing.T) {
 	duration := parseDuration("4 Stunden und 38 Minuten")
 	require.NotNil(t, duration)
-	require.Equal(t, 4*3600+38*60, *duration)
+	require.Equal(t, 4*60+38, *duration)
 
 	duration = parseDuration("57 Minuten")
 	require.NotNil(t, duration)
-	require.Equal(t, 57*60, *duration)
+	require.Equal(t, 57, *duration)
 
 	duration = parseDuration("4 Std. 38 Min.")
 	require.NotNil(t, duration)
-	require.Equal(t, 4*3600+38*60, *duration)
+	require.Equal(t, 4*60+38, *duration)
 }

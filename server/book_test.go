@@ -10,7 +10,7 @@ import (
 
 func TestThaliaBookToBookMetadata_Audiobook(t *testing.T) {
 	publishDate := time.Date(2026, time.March, 20, 0, 0, 0, 0, time.UTC)
-	duration := 81 * 60
+	duration := 81
 
 	book := thalia.Book{
 		Title:       "Folge 238: Falsche Schuld",

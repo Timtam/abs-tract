@@ -381,25 +381,25 @@ func parseDuration(value string) *int {
 		return nil
 	}
 
-	var durationSeconds int
+	var durationMinutes int
 	if hourMatches := hourRegex.FindStringSubmatch(value); len(hourMatches) == 2 {
 		hours, err := strconv.Atoi(hourMatches[1])
 		if err == nil {
-			durationSeconds += hours * 3600
+			durationMinutes += hours * 60
 		}
 	}
 	if minuteMatches := minuteRegex.FindStringSubmatch(value); len(minuteMatches) == 2 {
 		minutes, err := strconv.Atoi(minuteMatches[1])
 		if err == nil {
-			durationSeconds += minutes * 60
+			durationMinutes += minutes
 		}
 	}
 
-	if durationSeconds == 0 {
+	if durationMinutes == 0 {
 		return nil
 	}
 
-	return &durationSeconds
+	return &durationMinutes
 }
 
 func audioTagsFromProductDetails(productDetails map[string]string) []string {

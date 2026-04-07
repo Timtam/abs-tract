@@ -48,7 +48,7 @@ type BookMetadata struct {
 	Cover       *string `json:"cover,omitempty"`
 	Description *string `json:"description,omitempty"`
 
-	// Duration Duration in seconds
+	// Duration Duration in minutes
 	Duration      *int              `json:"duration,omitempty"`
 	Genres        *[]string         `json:"genres,omitempty"`
 	Isbn          *string           `json:"isbn,omitempty"`
@@ -716,16 +716,16 @@ var swaggerSpec = []string{
 	"FkeodCW6Lu19jkQYXhEevUIoRU7o4VTAjsHOGu0gMPxpPue/wmgCTYGztY0qJCmjswdnNK+N8SwaC0gq",
 	"ereSijo+KoI2PPyIcC9y8UM2FiaL/i57b8z6I5AsJUnRpQM7iSg3Ybf9glk9QEGRbgmuQGWZj8jF1SX7",
 	"vf0q1oAYD+Ww2mfzv5dlcg2PHhxFIhffiMgnHdtH/QclM/n5m5VkoQlQyya5AXwCTH4LsQ4dh7YMCXc6",
-	"4YCOdCrQvTfYSuIO4YV0n126JbADU2GeIFj26nb9ISGTUA1JQCSqlRVMxd7xm0hQepSDcTfHr70lUTpx",
-	"UBhdOpGOm1GaxnxKE1SAHLACjXtiOki6q5hUKLfarVRYmNhNI3XleadTUTXHoyOFtH7VKFdD+TfI04hp",
-	"qwNUr7gjbgL8+C2RCudXpKiZ3grJ6pUlPBar275X73rY8qCvU7HH+KCbHd8XuoAz1TmdvsctJ3UFhUdF",
-	"mxsuYa8gq/5dwzg4apAl4Dg53n26/ePqevHPu9vF1Z9jv0irLmETVa70vWH/RhWgXWDfO39c3IpUeGw4",
-	"MJF1eZYZC9oZjwXMDFZZ7+Qyxo5FFr94R6ZNhmIlf6F5UpHZE6CL+pnPLmZz9uKg0iqRizez+WwuUmEl",
-	"1WGDWWVMiSBLlzmQWNS8WAEdqvEmmJN7g8nKmLVLvFO6Sl78RcgTFbsoXxx+37JvT/W76fYdIVmcyl16",
-	"FtjfXt1yeihPeb/gMgaNo/A09u2Avfgc7MXWPDmNZVBoQN+2kj9Tzheb4dla6bKB7BmhUkZ3X3iCMcqR",
-	"47scjHtnF9TAXTRqIbLY+Q4D7VtWnfQiFYUUPA1EKiDc49ysYRwpvscfLGthzT/b8hxl/L1fXt8v/dGG",
-	"ZqFaNkp+YY9E5yM9cjsYv+v7K8+rL3O3PY1CKV/m0N2Sy+DCJ2Ks8u75fTCFbCbnQpwzDdtr4yh/M2dW",
-	"y+7/AAAA//+Qi1ngew0AAA==",
+	"4YCOdCrQvTfYSuIO4YV0n126JbADU2GeIFj26nb9ISGTUA1JQCSqlRVMxd7xm0hQepSDcTfHr70lUTpp",
+	"lfYETqTjZpSmMZ/SBBUgB6xA456YDpLuKiYVyq12KxUWJnbTSF153ulUVM3x6EghrV81ytVQ/g3yNGLa",
+	"6gDVK+6ImwA/fkukwvkVKWqmt0KyemUJj8Xqtu/Vux62POjrVOwxPuhmx/eFLuBMdU6n73HLSV1B4VHR",
+	"5oZL2CvIqn/XMA6OGmQJOE6Od59u/7i6Xvzz7nZx9efYL9KqS9hElSt9b9i/UQVoF9j3zh8XtyIVHhsO",
+	"TGRdnmXGgnbGYwEzg1XWO7mMsWORxS/ekWmToVjJX2ieVGT2BOiifuazi9mcvTiotErk4s1sPpuLVFhJ",
+	"ddhgVhlTIsjSZQ4kFjUvVkCHarwJ5uTeYLIyZu0S75Sukhd/EfJExS7KF4fft+zbU/1uun1HSBancpee",
+	"Bfa3V7ecHspT3i+4jEHjKDyNfTtgLz4He7E1T05jGRQa0Let5M+U88VmeLZWumwge0aolNHdF55gjHLk",
+	"+C4H497ZBTVwF41aiCx2vsNA+5ZVJ71IRSEFTwORiniPc7OGcaT4Hn+wrIU1/2zLc5Tx9355fb/0Rxua",
+	"hWrZKPmFPRKdj/TI7WD8ru+vPK++zN32NAqlfJlDd0sugwufiLHKu+f3wRSymZwLcc40bK+No/zNnFkt",
+	"u/8DAAD///rfmQN7DQAA",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

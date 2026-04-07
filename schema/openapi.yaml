@@ -138,7 +138,7 @@ components:
         duration:
           type: integer
           format: int
-          description: Duration in seconds
+          description: Duration in minutes
 
     SeriesMetadata:
       type: object
