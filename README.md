@@ -1,6 +1,6 @@
 # abs-tract
 
-This is an "all-in-one" book metadata provider for AudiobookShelf that can currently pull metadata from Goodreads and Kindle Store.
+This is an "all-in-one" book metadata provider for AudiobookShelf that can currently pull metadata from Goodreads, Kindle Store, and Thalia.
 
 Current metadata providers plan to be improved, and other metadata providers are on the roadmap.
 
@@ -55,6 +55,35 @@ I'm glad you asked - It's a fun play on words. AudiobookShelf is often abbreviat
 - Publish Year - of edition chosen by Amazon. **Not original publish year**
 - ASIN
 
+### Thalia
+
+#### Pros:
+
+- Provides strong metadata coverage for books sold by Thalia, including ISBN, publisher, language, and description.
+- For audiobooks, also returns audiobook-specific metadata when Thalia exposes it, such as narrator, duration, series, subtitle, and format/details tags.
+- Covers are high quality.
+
+#### Cons:
+
+- Currently focused on Thalia book listings and detail pages, so metadata depends on what Thalia exposes for a given edition.
+
+#### Metadata Provided:
+
+- Title
+- Subtitle
+- Author
+- Narrator - When available for audiobook editions
+- Cover
+- Publish Year - of edition chosen by Thalia. **Not original publish year**
+- Duration - In seconds, when available for audiobook editions
+- Description
+- ISBN
+- Publisher
+- Language
+- Series Name
+- Series Position
+- Tags - Thalia audiobook details such as format, medium, abridgement, family sharing, file count, age recommendation, and translator when available
+
 ## Running
 
 The best way to run abs-tract is to use Docker. To run abs-tract using Docker, use the following command:
@@ -87,6 +116,14 @@ curl --request GET \
     --url "http://$ADDRESS:5555/kindle/uk/search?query=The+Hobbit&author=J.R.R.+Tolkien"
 ```
 
+### Thalia
+
+```bash
+ADDRESS=localhost
+curl --request GET \
+    --url "http://$ADDRESS:5555/thalia/search?query=The+Hobbit&author=J.R.R.+Tolkien"
+```
+
 ## Setup with AudiobookShelf
 
 You can then set up abs-tract in AudiobookShelf.
@@ -109,6 +146,13 @@ and enter the following details:
 - Name: **Kindle**
 - URL: `http://<your_address>:5555/kindle/<your_region>`
   - e.g. `192.168.1.100:5555/kindle/uk`
+- Authorization Header Value: **Leave this unset**
+
+### Thalia
+
+- Name: **Thalia**
+- URL: `http://<your_address>:5555/thalia`
+  - e.g. `192.168.1.100:5555/thalia`
 - Authorization Header Value: **Leave this unset**
 
 Region can be one of the following:

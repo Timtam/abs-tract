@@ -3,9 +3,11 @@ package server
 import (
 	"context"
 	"strconv"
+	"strings"
 
 	"github.com/ahobsonsayers/abs-tract/goodreads"
 	"github.com/ahobsonsayers/abs-tract/kindle"
+	"github.com/ahobsonsayers/abs-tract/thalia"
 	"github.com/samber/lo"
 )
 
@@ -53,6 +55,21 @@ func searchKindleBooks(
 	books := make([]BookMetadata, 0, len(kindleBooks))
 	for _, kindleBook := range kindleBooks {
 		book := kindleBookToBookMetadata(kindleBook)
+		books = append(books, book)
+	}
+
+	return books, nil
+}
+
+func searchThaliaBooks(ctx context.Context, title string, author *string) ([]BookMetadata, error) {
+	thaliaBooks, err := thalia.DefaultClient.Search(ctx, title, author)
+	if err != nil {
+		return nil, err
+	}
+
+	books := make([]BookMetadata, 0, len(thaliaBooks))
+	for _, thaliaBook := range thaliaBooks {
+		book := thaliaBookToBookMetadata(thaliaBook)
 		books = append(books, book)
 	}
 
@@ -122,4 +139,105 @@ func kindleBookToBookMetadata(kindleBook kindle.Book) BookMetadata {
 		Cover:         &kindleBook.Cover,
 		PublishedYear: publishedYear,
 	}
+}
+
+func thaliaBookToBookMetadata(thaliaBook thalia.Book) BookMetadata {
+	var subtitle *string
+	if thaliaBook.Subtitle != "" {
+		subtitle = &thaliaBook.Subtitle
+	}
+
+	var author *string
+	if thaliaBook.Author != "" {
+		author = &thaliaBook.Author
+	}
+
+	var narrator *string
+	if thaliaBook.Narrator != "" {
+		narrator = &thaliaBook.Narrator
+	}
+
+	var cover *string
+	if thaliaBook.Cover != "" {
+		cover = &thaliaBook.Cover
+	}
+
+	var description *string
+	if thaliaBook.Description != "" {
+		description = &thaliaBook.Description
+	}
+
+	var publisher *string
+	if thaliaBook.Publisher != "" {
+		publisher = &thaliaBook.Publisher
+	}
+
+	var language *string
+	if thaliaBook.Language != "" {
+		language = &thaliaBook.Language
+	}
+
+	var isbn *string
+	if thaliaBook.ISBN != "" {
+		isbn = &thaliaBook.ISBN
+	}
+
+	var publishedYear *string
+	if thaliaBook.PublishDate != nil {
+		publishedYear = lo.ToPtr(strconv.Itoa(thaliaBook.PublishDate.Year()))
+	}
+
+	var series *[]SeriesMetadata
+	if thaliaBook.Series != "" {
+		seriesMetadata := SeriesMetadata{Series: thaliaBook.Series}
+		if thaliaBook.Sequence != "" {
+			seriesMetadata.Sequence = lo.ToPtr(thaliaBook.Sequence)
+		}
+		series = &[]SeriesMetadata{seriesMetadata}
+	}
+
+	tags := thaliaBookTags(thaliaBook)
+
+	return BookMetadata{
+		Subtitle:      subtitle,
+		Title:         thaliaBook.Title,
+		Author:        author,
+		Narrator:      narrator,
+		Cover:         cover,
+		Isbn:          isbn,
+		Description:   description,
+		Publisher:     publisher,
+		Language:      language,
+		Duration:      thaliaBook.Duration,
+		Series:        series,
+		Tags:          tags,
+		PublishedYear: publishedYear,
+	}
+}
+
+func thaliaBookTags(thaliaBook thalia.Book) *[]string {
+	tags := make([]string, 0, len(thaliaBook.Tags)+1)
+	if formatTag := thaliaAudiobookFormatTag(thaliaBook); formatTag != "" {
+		tags = append(tags, formatTag)
+	}
+	tags = append(tags, thaliaBook.Tags...)
+	if len(tags) == 0 {
+		return nil
+	}
+
+	return &tags
+}
+
+func thaliaAudiobookFormatTag(thaliaBook thalia.Book) string {
+	if thaliaBook.Format == "" {
+		return ""
+	}
+
+	if strings.HasPrefix(thaliaBook.Format, "Hörbuch") ||
+		strings.EqualFold(thaliaBook.Format, "MP3") ||
+		(thaliaBook.Duration != nil || thaliaBook.Narrator != "") {
+		return "Format: " + thaliaBook.Format
+	}
+
+	return ""
 }

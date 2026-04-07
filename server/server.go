@@ -33,3 +33,15 @@ func (*server) SearchKindle(
 
 	return SearchKindle200JSONResponse{N200JSONResponse{Matches: &books}}, nil
 }
+
+func (*server) SearchThalia(
+	ctx context.Context,
+	request SearchThaliaRequestObject,
+) (SearchThaliaResponseObject, error) {
+	books, err := searchThaliaBooks(ctx, request.Params.Query, request.Params.Author)
+	if err != nil {
+		return SearchThalia500JSONResponse{N500JSONResponse{Error: lo.ToPtr(err.Error())}}, nil
+	}
+
+	return SearchThalia200JSONResponse{N200JSONResponse{Matches: &books}}, nil
+}

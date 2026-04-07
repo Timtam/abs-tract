@@ -67,6 +67,24 @@ paths:
         "500":
           $ref: "#/components/responses/500"
 
+  /thalia/search:
+    get:
+      operationId: searchThalia
+      summary: Search for books using thalia
+      description: Search for books using thalia
+      parameters:
+        - $ref: "#/components/parameters/query"
+        - $ref: "#/components/parameters/author"
+      responses:
+        "200":
+          $ref: "#/components/responses/200"
+        "400":
+          $ref: "#/components/responses/400"
+        "401":
+          $ref: "#/components/responses/401"
+        "500":
+          $ref: "#/components/responses/500"
+
 components:
   securitySchemes:
     api_key:
