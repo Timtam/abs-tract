@@ -60,7 +60,7 @@ I'm glad you asked - It's a fun play on words. AudiobookShelf is often abbreviat
 #### Pros:
 
 - Provides strong metadata coverage for books sold by Thalia, including ISBN, publisher, language, and description.
-- For audiobooks, also returns audiobook-specific metadata when Thalia exposes it, such as narrator, duration, series, subtitle, and format/details tags.
+- For audiobooks, also returns audiobook-specific metadata when Thalia exposes it, such as narrator, duration, series, subtitle, and abridged status.
 - Covers are high quality.
 
 #### Cons:
@@ -73,6 +73,7 @@ I'm glad you asked - It's a fun play on words. AudiobookShelf is often abbreviat
 - Subtitle
 - Author
 - Narrator - When available for audiobook editions
+- Abridged - Derived from Thalia `Fassung` when available (`gekürzt` / `ungekürzt`)
 - Cover
 - Publish Year - of edition chosen by Thalia. **Not original publish year**
 - Duration - In minutes, when available for audiobook editions
@@ -82,7 +83,6 @@ I'm glad you asked - It's a fun play on words. AudiobookShelf is often abbreviat
 - Language
 - Series Name
 - Series Position
-- Tags - Thalia audiobook details such as format, medium, abridgement, family sharing, file count, age recommendation, and translator when available
 
 ## Running
 

@@ -3,7 +3,6 @@ package server
 import (
 	"context"
 	"strconv"
-	"strings"
 
 	"github.com/ahobsonsayers/abs-tract/goodreads"
 	"github.com/ahobsonsayers/abs-tract/kindle"
@@ -196,9 +195,8 @@ func thaliaBookToBookMetadata(thaliaBook thalia.Book) BookMetadata {
 		series = &[]SeriesMetadata{seriesMetadata}
 	}
 
-	tags := thaliaBookTags(thaliaBook)
-
 	return BookMetadata{
+		Abridged:      thaliaBook.Abridged,
 		Subtitle:      subtitle,
 		Title:         thaliaBook.Title,
 		Author:        author,
@@ -210,34 +208,6 @@ func thaliaBookToBookMetadata(thaliaBook thalia.Book) BookMetadata {
 		Language:      language,
 		Duration:      thaliaBook.Duration,
 		Series:        series,
-		Tags:          tags,
 		PublishedYear: publishedYear,
 	}
-}
-
-func thaliaBookTags(thaliaBook thalia.Book) *[]string {
-	tags := make([]string, 0, len(thaliaBook.Tags)+1)
-	if formatTag := thaliaAudiobookFormatTag(thaliaBook); formatTag != "" {
-		tags = append(tags, formatTag)
-	}
-	tags = append(tags, thaliaBook.Tags...)
-	if len(tags) == 0 {
-		return nil
-	}
-
-	return &tags
-}
-
-func thaliaAudiobookFormatTag(thaliaBook thalia.Book) string {
-	if thaliaBook.Format == "" {
-		return ""
-	}
-
-	if strings.HasPrefix(thaliaBook.Format, "Hörbuch") ||
-		strings.EqualFold(thaliaBook.Format, "MP3") ||
-		(thaliaBook.Duration != nil || thaliaBook.Narrator != "") {
-		return "Format: " + thaliaBook.Format
-	}
-
-	return ""
 }

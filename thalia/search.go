@@ -115,6 +115,9 @@ func mergeBook(base Book, detail Book) Book {
 	if detail.Narrator != "" {
 		base.Narrator = detail.Narrator
 	}
+	if detail.Abridged != nil {
+		base.Abridged = detail.Abridged
+	}
 	base.Format = mergeFormat(base.Format, detail.Format)
 	if detail.Cover != "" {
 		base.Cover = detail.Cover

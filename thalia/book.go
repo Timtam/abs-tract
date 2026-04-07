@@ -45,6 +45,7 @@ type Book struct {
 	Subtitle    string
 	Author      string
 	Narrator    string
+	Abridged    *bool
 	Format      string
 	Cover       string
 	Description string
@@ -184,6 +185,9 @@ func BookDetailsFromHTML(detailNode *nethtml.Node) (*Book, error) {
 	if value, ok := productDetails["Spieldauer"]; ok {
 		book.Duration = parseDuration(value)
 	}
+	if value, ok := productDetails["Fassung"]; ok {
+		book.Abridged = parseAbridged(value)
+	}
 	if value, ok := productDetails["Erscheinungsdatum"]; ok {
 		publishDate, err := time.Parse(publishDateLayout, value)
 		if err == nil {
@@ -203,7 +207,6 @@ func BookDetailsFromHTML(detailNode *nethtml.Node) (*Book, error) {
 		book.ISBN = value
 	}
 
-	book.Tags = audioTagsFromProductDetails(productDetails)
 	if book.Narrator == "" {
 		book.Narrator = narratorFromSubtitle(book.Subtitle)
 	}
@@ -402,29 +405,16 @@ func parseDuration(value string) *int {
 	return &durationMinutes
 }
 
-func audioTagsFromProductDetails(productDetails map[string]string) []string {
-	tagKeys := []string{
-		"Hörtyp",
-		"Fassung",
-		"Medium",
-		"Family Sharing",
-		"Abo-Fähigkeit",
-		"Anzahl Dateien",
-		"Anzahl",
-		"Altersempfehlung",
-		"Übersetzt von",
+func parseAbridged(value string) *bool {
+	value = strings.ToLower(cleanText(value))
+	switch {
+	case strings.Contains(value, "ungekürzt"):
+		return boolPtr(false)
+	case strings.Contains(value, "gekürzt"):
+		return boolPtr(true)
+	default:
+		return nil
 	}
-
-	tags := make([]string, 0, len(tagKeys))
-	for _, key := range tagKeys {
-		value, ok := productDetails[key]
-		if !ok || value == "" {
-			continue
-		}
-		tags = append(tags, key+": "+value)
-	}
-
-	return tags
 }
 
 func narratorFromSubtitle(subtitle string) string {
@@ -454,3 +444,5 @@ func cleanText(s string) string {
 	s = stdhtml.UnescapeString(s)
 	return strings.Join(strings.Fields(strings.TrimSpace(s)), " ")
 }
+
+func boolPtr(value bool) *bool { return &value }

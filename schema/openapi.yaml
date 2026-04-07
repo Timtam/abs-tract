@@ -104,6 +104,8 @@ components:
           type: string
         author:
           type: string
+        abridged:
+          type: boolean
         narrator:
           type: string
         publisher:

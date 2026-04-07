@@ -227,6 +227,8 @@ func TestBookDetailsFromHTML_Audiobook(t *testing.T) {
 	require.Equal(t, "Ungekürzte Lesung mit Rufus Beck", book.Subtitle)
 	require.Equal(t, "Andre Minninger, Ben Nevis", book.Author)
 	require.Equal(t, "Rufus Beck", book.Narrator)
+	require.NotNil(t, book.Abridged)
+	require.True(t, *book.Abridged)
 	require.Equal(t, "https://images.thalia.media/-/BF2000-2000/d2a4bb547a9246ac9ec97c44e9c0a5e4/folge-238-falsche-schuld-mp3.jpeg", book.Cover)
 	require.Equal(t, "Eine geteilte Insel, eine spirituelle Sekte und ein Einbruch.", book.Description)
 	require.Equal(t, "EUROPA/Sony Music Family Entertainment", book.Publisher)
@@ -236,12 +238,7 @@ func TestBookDetailsFromHTML_Audiobook(t *testing.T) {
 	require.Equal(t, expectedDuration, *book.Duration)
 	require.Equal(t, "Die drei ???", book.Series)
 	require.Equal(t, "238", book.Sequence)
-	require.Equal(t, []string{
-		"Hörtyp: Hörspiel",
-		"Fassung: gekürzt",
-		"Medium: MP3",
-		"Anzahl Dateien: 28",
-	}, book.Tags)
+	require.Empty(t, book.Tags)
 }
 
 func TestBookDetailsFromHTML_DecodesEntitiesAndPrefersDescriptionTemplate(t *testing.T) {
@@ -266,6 +263,14 @@ func TestBookDetailsFromHTML_DecodesEntitiesAndPrefersDescriptionTemplate(t *tes
 					Sie ist seine Hoffnung und er ihr Verhängnis.<br><br>Amber Montclair gehört keinem der großen Hexenzirkel an.
 				</div>
 			</template>
+			<div class="details-default">
+				<div class="artikeldetails">
+					<section class="artikeldetail">
+						<h3 class="element-text-standard-strong detailbezeichnung">Fassung</h3>
+						<p class="element-text-standard value">ungekürzt</p>
+					</section>
+				</div>
+			</div>
 		</body>
 	</html>`
 
@@ -276,6 +281,9 @@ func TestBookDetailsFromHTML_DecodesEntitiesAndPrefersDescriptionTemplate(t *tes
 	require.NoError(t, err)
 	require.NotNil(t, book)
 	require.Equal(t, "Die Lichtschöpferin", book.Title)
+	require.Equal(t, "4069829540988", book.ISBN)
+	require.NotNil(t, book.Abridged)
+	require.False(t, *book.Abridged)
 	require.Equal(t, "Sie ist seine Hoffnung und er ihr Verhängnis. Amber Montclair gehört keinem der großen Hexenzirkel an.", book.Description)
 }
 
@@ -336,4 +344,16 @@ func TestParseDuration(t *testing.T) {
 	duration = parseDuration("4 Std. 38 Min.")
 	require.NotNil(t, duration)
 	require.Equal(t, 4*60+38, *duration)
+}
+
+func TestParseAbridged(t *testing.T) {
+	abridged := parseAbridged("gekürzt")
+	require.NotNil(t, abridged)
+	require.True(t, *abridged)
+
+	abridged = parseAbridged("ungekürzt")
+	require.NotNil(t, abridged)
+	require.False(t, *abridged)
+
+	require.Nil(t, parseAbridged("vollständig"))
 }
