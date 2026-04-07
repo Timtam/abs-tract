@@ -2,6 +2,7 @@ package thalia
 
 import (
 	"encoding/json"
+	stdhtml "html"
 	"regexp"
 	"strconv"
 	"strings"
@@ -10,7 +11,7 @@ import (
 	"github.com/antchfx/htmlquery"
 	"github.com/antchfx/xpath"
 	mapset "github.com/deckarep/golang-set/v2"
-	"golang.org/x/net/html"
+	nethtml "golang.org/x/net/html"
 )
 
 const publishDateLayout = "02.01.2006"
@@ -28,6 +29,9 @@ var (
 	detailSeriesExpr         = xpath.MustCompile(`//a[contains(concat(" ", normalize-space(@class), " "), " serie-link ")]`)
 	detailSpeakerExpr        = xpath.MustCompile(`//a[contains(concat(" ", normalize-space(@class), " "), " sprecher-name ")]`)
 	detailSubtitleExpr       = xpath.MustCompile(`//*[contains(concat(" ", normalize-space(@class), " "), " untertitel ")]`)
+	detailDescriptionExpr    = xpath.MustCompile(`//template[@data-id="zusatztexte"]//*[contains(concat(" ", normalize-space(@class), " "), " zusatztexte ")]`)
+	detailShortDescExpr      = xpath.MustCompile(`//*[contains(concat(" ", normalize-space(@class), " "), " kurzbeschreibung ")]`)
+	detailMetaDescExpr       = xpath.MustCompile(`//meta[@property="og:description" or @name="description"]`)
 	detailPageViewExpr       = xpath.MustCompile(`//dl-pageview`)
 	detailProductDetailsExpr = xpath.MustCompile(`//div[contains(concat(" ", normalize-space(@class), " "), " details-default ")]//section[contains(concat(" ", normalize-space(@class), " "), " artikeldetail ")]`)
 	detailLabelExpr          = xpath.MustCompile(`.//*[contains(concat(" ", normalize-space(@class), " "), " detailbezeichnung ")]`)
@@ -64,7 +68,7 @@ type metadataJSON struct {
 }
 
 // BooksFromHTML parses the books from the html of a Thalia search results page.
-func BooksFromHTML(searchNode *html.Node) ([]Book, error) {
+func BooksFromHTML(searchNode *nethtml.Node) ([]Book, error) {
 	resultNodes := htmlquery.QuerySelectorAll(searchNode, searchResultsExpr)
 
 	books := make([]Book, 0, len(resultNodes))
@@ -84,7 +88,7 @@ func BooksFromHTML(searchNode *html.Node) ([]Book, error) {
 
 // BookFromHTML parses a book from a Thalia search result node.
 // If a result is not a book, nil is returned.
-func BookFromHTML(bookNode *html.Node) *Book {
+func BookFromHTML(bookNode *nethtml.Node) *Book {
 	linkNode := htmlquery.QuerySelector(bookNode, searchLinkExpr)
 	path := htmlquery.SelectAttr(linkNode, "href")
 	if path == "" {
@@ -119,7 +123,7 @@ func BookFromHTML(bookNode *html.Node) *Book {
 }
 
 // BookDetailsFromHTML parses a book detail page.
-func BookDetailsFromHTML(detailNode *html.Node) (*Book, error) {
+func BookDetailsFromHTML(detailNode *nethtml.Node) (*Book, error) {
 	book := &Book{}
 
 	if metadata := metadataFromHTML(detailNode); metadata != nil {
@@ -132,6 +136,9 @@ func BookDetailsFromHTML(detailNode *html.Node) (*Book, error) {
 		if len(metadata.Image) != 0 {
 			book.Cover = cleanText(metadata.Image[0])
 		}
+	}
+	if description := descriptionFromHTML(detailNode); description != "" {
+		book.Description = description
 	}
 
 	book.Subtitle = nodeText(htmlquery.QuerySelector(detailNode, detailSubtitleExpr))
@@ -207,7 +214,7 @@ func BookDetailsFromHTML(detailNode *html.Node) (*Book, error) {
 	return book, nil
 }
 
-func metadataFromHTML(detailNode *html.Node) *metadataJSON {
+func metadataFromHTML(detailNode *nethtml.Node) *metadataJSON {
 	var productMetadata *metadataJSON
 
 	for _, metadataNode := range htmlquery.QuerySelectorAll(detailNode, detailJSONLDExpr) {
@@ -227,17 +234,17 @@ func metadataFromHTML(detailNode *html.Node) *metadataJSON {
 	return productMetadata
 }
 
-func authorNamesFromHTML(detailNode *html.Node) []string {
+func authorNamesFromHTML(detailNode *nethtml.Node) []string {
 	authorNodes := htmlquery.QuerySelectorAll(detailNode, detailAuthorExpr)
 	return nodeTexts(authorNodes)
 }
 
-func speakerNamesFromHTML(detailNode *html.Node) []string {
+func speakerNamesFromHTML(detailNode *nethtml.Node) []string {
 	speakerNodes := htmlquery.QuerySelectorAll(detailNode, detailSpeakerExpr)
 	return nodeTexts(speakerNodes)
 }
 
-func nodeTexts(nodes []*html.Node) []string {
+func nodeTexts(nodes []*nethtml.Node) []string {
 	values := make([]string, 0, len(nodes))
 	seenValues := mapset.NewSet[string]()
 	for _, node := range nodes {
@@ -253,7 +260,7 @@ func nodeTexts(nodes []*html.Node) []string {
 	return values
 }
 
-func nodeText(node *html.Node) string {
+func nodeText(node *nethtml.Node) string {
 	if node == nil {
 		return ""
 	}
@@ -261,7 +268,57 @@ func nodeText(node *html.Node) string {
 	return cleanText(htmlquery.InnerText(node))
 }
 
-func productDetailsFromHTML(detailNode *html.Node) map[string]string {
+func nodeTextWithBreaks(node *nethtml.Node) string {
+	if node == nil {
+		return ""
+	}
+
+	var builder strings.Builder
+	var walk func(*nethtml.Node)
+	walk = func(current *nethtml.Node) {
+		switch current.Type {
+		case nethtml.TextNode:
+			builder.WriteString(current.Data)
+		case nethtml.ElementNode:
+			if current.Data == "br" {
+				builder.WriteByte(' ')
+			}
+		}
+
+		for child := current.FirstChild; child != nil; child = child.NextSibling {
+			walk(child)
+		}
+
+		if current.Type == nethtml.ElementNode {
+			switch current.Data {
+			case "div", "p", "li", "section":
+				builder.WriteByte(' ')
+			}
+		}
+	}
+
+	walk(node)
+
+	return cleanText(builder.String())
+}
+
+func descriptionFromHTML(detailNode *nethtml.Node) string {
+	descriptionNodes := []*nethtml.Node{
+		htmlquery.QuerySelector(detailNode, detailDescriptionExpr),
+		htmlquery.QuerySelector(detailNode, detailShortDescExpr),
+	}
+	for _, descriptionNode := range descriptionNodes {
+		description := nodeTextWithBreaks(descriptionNode)
+		if description != "" {
+			return description
+		}
+	}
+
+	metaDescriptionNode := htmlquery.QuerySelector(detailNode, detailMetaDescExpr)
+	return cleanText(htmlquery.SelectAttr(metaDescriptionNode, "content"))
+}
+
+func productDetailsFromHTML(detailNode *nethtml.Node) map[string]string {
 	productDetailNodes := htmlquery.QuerySelectorAll(detailNode, detailProductDetailsExpr)
 	productDetails := make(map[string]string, len(productDetailNodes))
 	for _, productDetailNode := range productDetailNodes {
@@ -282,7 +339,7 @@ func productDetailsFromHTML(detailNode *html.Node) map[string]string {
 	return productDetails
 }
 
-func searchFormat(bookNode *html.Node) string {
+func searchFormat(bookNode *nethtml.Node) string {
 	formatNode := htmlquery.QuerySelector(bookNode, searchFormatExpr)
 	if formatNode == nil {
 		return ""
@@ -394,5 +451,6 @@ func seriesSequenceFromTitle(title string) string {
 }
 
 func cleanText(s string) string {
+	s = stdhtml.UnescapeString(s)
 	return strings.Join(strings.Fields(strings.TrimSpace(s)), " ")
 }

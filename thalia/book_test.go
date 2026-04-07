@@ -244,6 +244,59 @@ func TestBookDetailsFromHTML_Audiobook(t *testing.T) {
 	}, book.Tags)
 }
 
+func TestBookDetailsFromHTML_DecodesEntitiesAndPrefersDescriptionTemplate(t *testing.T) {
+	detailHTML := `
+	<html>
+		<head>
+			<script type="application/ld+json">
+			{
+				"@context": "https://schema.org/",
+				"@type": "Product",
+				"gtin13": "4069829540988",
+				"name": "Die Lichtsch&ouml;pferin",
+				"image": ["https://images.thalia.media/-/BF2000-2000/e3d3a7fb4eab486caf5d3c3cc7365501/die-lichtschoepferin-mp3-leoni-oeffinger.jpeg"],
+				"description": "Sie ist seine Hoffnung und er ihr Verh&auml;ngnis."
+			}
+			</script>
+			<meta property="og:description" content="Kurze Beschreibung mit &ouml;"/>
+		</head>
+		<body>
+			<template data-id="zusatztexte">
+				<div class="zusatztexte">
+					Sie ist seine Hoffnung und er ihr Verhängnis.<br><br>Amber Montclair gehört keinem der großen Hexenzirkel an.
+				</div>
+			</template>
+		</body>
+	</html>`
+
+	detailNode, err := htmlquery.Parse(strings.NewReader(detailHTML))
+	require.NoError(t, err)
+
+	book, err := BookDetailsFromHTML(detailNode)
+	require.NoError(t, err)
+	require.NotNil(t, book)
+	require.Equal(t, "Die Lichtschöpferin", book.Title)
+	require.Equal(t, "Sie ist seine Hoffnung und er ihr Verhängnis. Amber Montclair gehört keinem der großen Hexenzirkel an.", book.Description)
+}
+
+func TestBookDetailsFromHTML_DescriptionFallsBackToMetaDescription(t *testing.T) {
+	detailHTML := `
+	<html>
+		<head>
+			<meta property="og:description" content="Kurzbeschreibung mit &ouml; und &auml;"/>
+		</head>
+		<body></body>
+	</html>`
+
+	detailNode, err := htmlquery.Parse(strings.NewReader(detailHTML))
+	require.NoError(t, err)
+
+	book, err := BookDetailsFromHTML(detailNode)
+	require.NoError(t, err)
+	require.NotNil(t, book)
+	require.Equal(t, "Kurzbeschreibung mit ö und ä", book.Description)
+}
+
 func TestBookDetailsFromHTML_AudiobookNarratorFallback(t *testing.T) {
 	detailHTML := `
 	<html>
